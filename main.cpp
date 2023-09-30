@@ -62,6 +62,11 @@ int evaluate(char board[3][3], char player)
 	return value;
 }
 
+/*
+* Brief: checks winner based on state of the board
+* Input: -
+* Output: integer based on whether x wins, o wins, or tie
+*/
 int checkWinner()
 {
 	int winner=0;
@@ -79,7 +84,6 @@ int checkWinner()
 				winner=2;
 			}
 			return winner;
-
 		}
 	}
 
@@ -397,19 +401,27 @@ int minimax(char board[3][3], int depth, bool isMax, int alpha, int beta)
 	
 }
 
-int bestMove(char board[3][3], int currentPlayer)
+
+/*
+* Brief: checks winner based on state of the board
+* Input: -
+* Output: integer based on whether x wins, o wins, or tie
+*/
+string bestMove(char board[3][3], int currentPlayer)
 {
 	int tempX=-1;
 	int tempY=-1;
 	int score=0;
 	int bestScore;
 	int result=3;
-	char tempString[9];
+	char returnString[9];
 	int counter=0;
 
+	// x's move
 	if(currentPlayer==1) 	{
 		bestScore=-100;
 
+		// Scan through board and insert x at blank spaces.
 		for(int i=0; i<3; i++)
 		{
 			for(int j=0; j<3; j++)
@@ -424,11 +436,14 @@ int bestMove(char board[3][3], int currentPlayer)
 					tempY=j;
 					board[i][j]='x';
 
-
+					// Calculate minimax value based on new board state.
 					score=minimax(board,1,false,alpha,beta);
 
+					// Backtrack. Replace blank space
 					board[i][j]='-';
 					counter=0;
+
+					// If this score is better than the previous bestScore, it must be more optimal for early termination. This will be the next best move.
 					if(score>bestScore)
 					{
 						bestScore = score;
@@ -437,11 +452,10 @@ int bestMove(char board[3][3], int currentPlayer)
 						{
 							for(int j=0; j<3; j++)
 							{
-								tempString[counter]=board[i][j];
+								returnString[counter]=board[i][j];
 								counter++;
 							}
 						}
-
 					}
 					counter=0;
 					bestScore=max(score, bestScore);
@@ -464,8 +478,11 @@ int bestMove(char board[3][3], int currentPlayer)
 			}
 		}
 	}
-	else			{
+	else
+	//  o's move
+	{
 		bestScore=100;
+		// Scan through board and insert o at blank spaces.
 		for(int i=0; i<3; i++)
 		{
 			for(int j=0; j<3; j++)
@@ -481,9 +498,10 @@ int bestMove(char board[3][3], int currentPlayer)
 
 					board[i][j]='o';
 
-
+					// Calculate minimax value based on new board state.
 					score=minimax(board,1,true,alpha,beta);
-
+					
+					// If this score is better than the previous bestScore, it must be more optimal for early termination. This will be the next best move.
 					if(score<bestScore) 					{
 						
 						bestScore = score;
@@ -492,13 +510,13 @@ int bestMove(char board[3][3], int currentPlayer)
 						{
 							for(int j=0; j<3; j++)
 							{
-								tempString[counter]=board[i][j];
+								returnString[counter]=board[i][j];
 								counter++;
 							}
 						}
 
 					}
-
+					// Backtrack
 					board[i][j]='-';
 					bestScore=min(score, bestScore);
 					counter=0;
@@ -522,8 +540,7 @@ int bestMove(char board[3][3], int currentPlayer)
 			}
 		}
 	}
-	cout<<tempString;
-	return bestScore;
+	return returnString;
 }
 
 int main(int argc, char **argv)
@@ -540,6 +557,8 @@ int main(int argc, char **argv)
 	int counter=0;
 	int blankCounter=0;
 	bool isMax;
+
+	// a-b pruning
 	if(argc==4)
 	{
 		input=argv[1];
@@ -548,9 +567,8 @@ int main(int argc, char **argv)
 		input3=argv[3];
 		string s(input3);
 		prune=true;
-
-
 	}
+	// Early termination
 	else if(argc==5)
 	{
 		input=argv[1];
@@ -562,6 +580,7 @@ int main(int argc, char **argv)
 		ply=atoi(argv[4]);
 		earlyT=true;
 	}
+	// Normal
 	else
 	{
 		input=argv[1];
@@ -571,6 +590,7 @@ int main(int argc, char **argv)
 	}
 	myfile.open(path);
 
+	// Raster scan input and generate board
 	inputLength=input.length();
 	for(int i=0; i<3; i++)
 	{
@@ -578,13 +598,13 @@ int main(int argc, char **argv)
 		{
 			board[i][j]=input.at(counter);
 			counter++;
-
 			if(board[i][j]=='-')
 			{
 				blankCounter++;
 			}
 		}
 	}
+	// blankCounter indicates x or o player's turn
 	if(blankCounter%2==0)
 	{
 		currentPlayer=2;
@@ -596,9 +616,7 @@ int main(int argc, char **argv)
 		isMax=true;
 	}
 	winResult=checkWinner();
-
-
-	bestMove(board, currentPlayer);
+	cout<<bestMove(board, currentPlayer);
 	myfile<<endl;
 	myfile<<endl;
 
